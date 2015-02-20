@@ -3,13 +3,22 @@ from django.contrib import admin
 from django.contrib.sessions.models import Session
 from django.conf import settings
 from django.contrib.auth.admin import UserAdmin
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 
 
 class HijackUserAdminMixin(object):
 
     def hijack_field(self, obj):
-        return '<a href="%s" class="button">Hijack %s</a>' % (reverse('login_with_id', args=(obj.id,)), obj)
+        try:
+            hijack_url = reverse('login_with_id', args=(obj.id,))
+        except NoReverseMatch:
+            hijack_url = None
+
+        if hijack_url is not None:
+            return '<a href="{0}" class="button">Hijack {1}</a>'.format(hijack_url, obj)
+        else:
+            return 'Unavailable'
+
     hijack_field.allow_tags = True
     hijack_field.short_description = 'Hijack User'
 
